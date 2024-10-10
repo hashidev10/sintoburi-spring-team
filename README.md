@@ -1,3 +1,11 @@
+
+
+### 김동석 포트폴리오 커뮤니티
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/1GbStTl7joA?si=fHnReXuMuvA-IDCK" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+
+
 ### 목차
 
 > 1. [ERD 구조](#erd-구조)
