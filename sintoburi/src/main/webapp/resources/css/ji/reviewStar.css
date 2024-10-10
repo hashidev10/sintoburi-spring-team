@@ -1,0 +1,31 @@
+@charset "UTF-8";
+
+.star-rating {
+    font-size: 0; /* 텍스트 크기를 0으로 설정하여 별 이미지만 표시 */
+    white-space: nowrap; /* 공백을 없앰 */
+    display: inline-block;
+    width: 110px; /* 별의 전체 너비 설정 (5개의 별 x 각 별의 너비) */
+    height: 22px; /* 각 별의 높이 */
+    background: url('/path/to/star-sprites.png') repeat-x; /* 별 이미지 스프라이트 설정 */
+    background-size: 110px 22px; /* 이미지 스프라이트의 크기 */
+}
+
+.star-rating span {
+    display: inline-block;
+    height: 100%;
+    vertical-align: top;
+}
+
+.star-rating .full {
+    width: 100%;
+    background-position: 0 0;
+}
+
+.star-rating .half {
+    width: 50%;
+    background-position: 0 -22px;
+}
+
+.star-rating .empty {
+    width: 0;
+}

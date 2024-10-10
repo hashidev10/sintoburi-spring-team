@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- 매퍼 인터페이스 경로와 같게 지정  -->
+  <mapper namespace="com.kh.sintoburi.mapper.hc.HcFollowMapper">
+  	<insert id="addFollow">
+  		insert into tbl_user_follow (user_follower, user_following)
+  		values (#{user_follower}, #{user_following})
+  	</insert>
+  	
+  	<delete id="removeFollow">
+  		delete from tbl_user_follow
+  		where user_following = #{user_following} 
+  		and 
+  		user_follower = #{user_follower}
+  	</delete>	
+  	
+  	<select id="getFollowCount" resultType="int">
+  		select count(*) from tbl_user_follow
+  		where user_following = #{user_following}
+  	</select>
+  	
+  	<select id="isCheckFollow" resultType="HcFollowDto">
+  		select * from tbl_user_follow
+  		where user_follower = #{user_follower} 
+  		and
+  		user_following = #{user_following}
+  	</select>
+  	
+  	
+  
+  </mapper>

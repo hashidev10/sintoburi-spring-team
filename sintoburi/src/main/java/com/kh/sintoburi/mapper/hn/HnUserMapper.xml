@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.kh.sintoburi.mapper.hn.HnUserMapper">
+  
+  <!-- 회원목록 -->
+	  <select id="getList" resultType="HnUserDto">
+	  	select * from tbl_user
+	  </select>
+
+	<!-- 매니저목록 -->
+	  <select id="managerList" resultType="HnUserDto">
+	  	select * from tbl_user
+	  	where grade = '관리자'
+	  </select>
+  
+  <!--  회원페이징처리 -->
+ <select id="getListWithPaging" resultType="HnUserDto">
+    select *
+    from (
+        select
+            user_id,
+            user_name,
+            user_email,
+            grade,
+            last_login,
+            business,
+            row_number() over ( order by
+                    case when business = '1' then 0 else 1 end,
+                    case when grade != '판매자' then 0 else 1 end,
+                    last_login desc) as rn
+        from tbl_user
+        <where>
+           grade not in('관리자', '마스터') 
+           <if test="type != null">
+                <trim prefix="and (" suffix=")" prefixOverrides="or">
+                    <foreach item="type" collection="typeArr" separator="or">
+                        <choose>
+                        	<when test="type == 'A'.toString()">
+                                1=1
+                            </when>
+                            <when test="type == 'I'.toString()">
+                                user_id LIKE '%' || #{keyword} || '%'
+                            </when>
+                            <when test="type == 'E'.toString()">
+                                user_email LIKE '%' || #{keyword} || '%'
+                            </when>
+                            <when test="type == 'G'.toString()">
+                                grade LIKE '%' || #{keyword} || '%'
+                            </when>
+                            <when test="type == 'B'.toString()">
+                                business = #{keyword} and grade != '판매자'
+                            </when>
+                        </choose>
+                    </foreach>
+                </trim>
+            </if>
+        </where>
+    ) subquery
+     
+  where rn &gt; (#{pageNum} - 1) * #{amount}
+		and rn &lt;= #{pageNum} * #{amount}
+</select>					
+
+<!-- 게시글 갯수 -->
+	<select id="getTotalCount" resultType="int">
+		select count(*) from tbl_user
+		<where>
+			<if test="type != null">
+				<trim prefix="(" suffix=")" prefixOverrides="or">
+					<foreach item="type" collection="typeArr">
+						<trim prefix="or">
+							<choose>
+                                <when test="type == 'A'.toString()">
+                                1=1
+                            </when>
+                            <when test="type == 'I'.toString()">
+                                user_id LIKE '%' || #{keyword} || '%'
+                            </when>
+                            <when test="type == 'E'.toString()">
+                                user_email LIKE '%' || #{keyword} || '%'
+                            </when>
+                            <when test="type == 'G'.toString()">
+                                grade LIKE '%' || #{keyword} || '%'
+                            </when>
+                            <when test="type == 'B'.toString()">
+                                business = #{keyword} and grade != '판매자'
+                            </when>
+                            </choose>
+						</trim>
+					</foreach>
+				</trim>
+			</if>
+		</where>
+	</select> 
+
+<!--  매니저페이징처리 -->
+ <select id="managerListPaging" resultType="HnUserDto">
+    select *
+    from (
+        select
+            user_id,
+            user_name,
+            user_email,
+            grade,
+            last_login,
+            business,
+            row_number() over (order by case when grade = '관리자' then 1 else 0 end desc) as rn
+        from tbl_user
+        <where>
+        grade not in('마스터') 
+            <if test="typeArr != null and typeArr.length > 0">
+                <trim prefix="and(" suffix=")" prefixOverrides="or">
+                    <foreach item="type" collection="typeArr" separator="or">
+                        <choose>
+                        	<when test="type == 'A'.toString()">
+                                1=1
+                            </when>
+                            <when test="type == 'I'.toString()">
+                                user_id LIKE '%' || #{keyword} || '%'
+                            </when>
+                            <when test="type == 'E'.toString()">
+                                user_email LIKE '%' || #{keyword} || '%'
+                            </when>
+                            <when test="type == 'G'.toString()">
+                                grade LIKE '%' || #{keyword} || '%'
+                            </when>
+                        </choose>
+                    </foreach>
+                </trim>
+            </if>
+        </where>
+    ) subquery
+    where rn &gt; (#{pageNum} - 1) * #{amount}
+      and rn &lt;= #{pageNum} * #{amount}
+    
+</select>
+
+<!-- 매니저게시글 갯수 -->
+	<select id="managerTotalCount" resultType="int">
+		select count(*) from tbl_user
+		<where>
+			<if test="type != null">
+				<trim prefix="(" suffix=")" prefixOverrides="or">
+					<foreach item="type" collection="typeArr">
+						<trim prefix="or">
+							<choose>
+                                <when test="type == 'I'.toString()">
+                                    user_id like '%' || #{keyword} || '%'
+                                </when>
+                                <when test="type == 'E'.toString()">
+                                    user_email like '%' || #{keyword} || '%'
+                                </when>
+                                <when test="type == 'G'.toString()">
+                               		 grade LIKE '%' || #{keyword} || '%'
+                           		 </when>
+                            </choose>
+						</trim>
+					</foreach>
+				</trim>
+			</if>
+		</where>
+</select> 
+ 
+
+<!-- 회원 등급 수정 --> 
+    <update id="updateGrade">
+        update tbl_user
+        set grade = #{grade}
+        where user_id = #{user_id}
+    </update>
+    
+    <!-- 등급 처리 완료시 business 1로 업데이트 -->
+    <update id="updateBusiness">
+    	update tbl_user
+    	set business = 1
+    	where user_id = #{user_id}
+    </update>
+  
+  <!--  회원 데이터 1개 -->
+   <select id="selectById" resultType="UserVo">
+  	select * from tbl_user
+  	where user_id = #{user_id}
+  </select>
+  
+  <!-- 로그인 -->
+  <select id="login" resultType="UserVo">
+		select *
+		from tbl_user
+		where user_id = #{user_id}
+		and user_pw = #{user_pw}
+	</select>
+
+	<!-- 회원가입 -->
+	<insert id="join">
+		insert into tbl_user (user_id, user_pw, user_name,user_email,address ,user_phone)
+		values(#{user_id},#{user_pw}, #{user_name} , #{user_email},#{address},#{user_phone})
+	</insert>
+	
+	<!-- 회원정보 -->
+	<select id="selectUserInfo" resultType="UserVo">
+		select * from tbl_user
+		where user_id = #{user_id}
+	</select>
+	
+	<!-- 회원정보수정 -->
+	<update id="updateUserInfo">
+		update tbl_user set
+			user_name = #{user_name},
+			user_pw = #{user_pw},
+			user_email = #{user_email},
+			user_phone = #{user_phone},
+			address = #{address}
+		where user_id = #{user_id}
+	</update>
+	
+	<!-- 회원탈퇴 -->
+	<delete id="unRegister">
+		delete from tbl_user
+		where user_id = #{user_id}
+	</delete>
+	
+	<!-- 아이디저장 -->
+	<select id="checkDupId" resultType="int">
+		select count(*) from tbl_user
+		where user_id = #{user_id}
+	</select>
+	
+	<!-- 이메일조회 -->
+	<select id="getEmailById" resultType="string">
+		select user_email from tbl_user
+		where user_id = #{user_id}
+	</select>
+
+	 <!-- 회원정보 수정 시 비밀번호 체크 -->
+	<select id="checkPw" resultType="HnUserDto">
+		select user_pw from tbl_user 
+		where user_id = #{user_id}
+	</select>
+	
+	<!-- 사업자번호 업데이트 -->
+	 <update id="updateBusinessNum">
+	  	update tbl_user set
+			business_num = #{business_num}
+		where user_id = #{user_id}
+	 </update>
+	 
+	 <!-- 등급 변경해야 할 리스트 알림 -->
+	  <select id="gradeUpdateShow" resultType="HnUserDto" >
+	  select * 
+	from (
+	    select * 
+	    from tbl_user
+	    where business = 1
+	      and grade = '구매자'
+	    order by last_login desc
+	    )
+	where rownum &lt; = 4
+	  
+  
+  </select>
+  
+  </mapper>

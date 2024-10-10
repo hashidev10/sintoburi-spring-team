@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="com.kh.sintoburi.mapper.gr.BasketMapper">
+ 
+<!--  장바구니 키 -->
+	  <insert id="insertSelectKey">
+	  	<selectKey keyProperty="bno" order="BEFORE"	resultType="int">
+			select seq_basket.nextval from dual
+		</selectKey>
+	  	insert into tbl_basket
+	  		(bno, user_id)
+	  	values
+	  	    (#{bno}, #{user_id})	
+	  </insert>
+	  
+<!-- 	  장바구니에 넣기 -->
+<!-- 지환 TODO !!!!!!!!!!!!!!!!!!!!!!-->
+	  <insert id="insertDetail">
+		insert into tbl_basket_detail
+			(bdno, product_no, bno, p_count)
+		values
+			(seq_basket_detail.nextval, #{product_no}, #{bno}, #{p_count})
+	  </insert>
+	  
+<!-- 	  장바구니 번호 확인(0이면 장바구니 없는 것) -->
+	 <select id="getBnoByUser" resultType="int">
+	 	with results as
+		(
+		  select bno, user_id
+		  from tbl_basket b
+		  where user_id = #{user_id}
+		)
+		select bno
+		from results
+		union all
+		select 0
+		from dual
+		where not exists (select bno from results)
+	 </select>
+	  
+<!-- 	  장바구니에서 상품 개수 수정 (0 -> 제거) -->
+	  <update id="update">
+	  		update tbl_basket_detail set
+	  			p_count = #{p_count}
+	  		where bdno = #{bdno}
+	  </update>
+	  
+<!-- 	  장바구니 상세에서 상품 제거 - 1개씩 제거 -->
+	  <delete id="delete">
+	  		delete from tbl_basket_detail
+	  		where bdno = #{bdno}
+	  </delete>
+	  
+<!-- 	  장바구니 비우기 -->
+	  <delete id="deleteAll">
+	  		delete from tbl_basket_detail
+	  		where bno = #{bno}
+	  </delete>
+	  
+<!-- 	  장바구니 비우기 -->
+	  <delete id="deleteBasket">
+	  		delete from tbl_basket
+	  		where bno = #{bno}
+	  </delete>
+	  
+	   <!-- 게시글 개수 -->
+	<select id="getTotalCount" resultType="int">
+		select count(*) from tbl_basket_detail
+		where bno = (select bno from tbl_basket
+					 where user_id = #{user_id})
+	</select> 
+	  
+	  <!-- 글목록 (페이징) --> 
+	<select id="getListWithPaging" resultType="BasketDetailDto">
+		select * from (
+			select k.user_id, p.product_name, p.price, 
+					(i.img_path || i.uuid || '_' || i.img_name) img_path,
+					b.product_no, b.p_count, b.bdno, b.put_date, (b.p_count*p.price) total_price,
+                row_number() over (order by put_date desc) as rn 
+	        from tbl_basket_detail b, tbl_product p, tbl_img i, tbl_basket k
+	        where b.bno = k.bno
+	        and k.user_id = #{user_id}
+	        and b.product_no = p.product_no
+	        and p.product_no = i.product_no
+	        order by B.PUT_DATE desc
+	        ) 
+		where rn &gt; (#{pageNum} - 1) * #{amount}
+		and rn &lt;= #{pageNum} * #{amount}
+	</select> 
+
+ 	<!-- 장바구니 합계 가격 -->
+	<select id="getSumPrice" resultType="int">
+	   select nvl(sum(total_price),0) sum_price
+	    from (
+	        select d.p_count cnt, p.price price,(d.p_count * p.price) total_price 
+	        from tbl_basket_detail d
+	        join tbl_product p on d.product_no = p.product_no
+	        where d.bno = (
+                            select bno 
+                            from tbl_basket
+                            where user_id = #{user_id})
+	        )
+	</select>
+	
+<!-- 	bdno 삭제해도 bdno에서 얻을 수 있는 정보를 주문상세에 넘겨주기   -->
+	<select id="selectByBdno" resultType="BasketDetailDto">
+		select bdno, product_no, p_count from tbl_basket_detail
+ 		where bdno = #{bdno}
+	</select>
+ 
+  </mapper>

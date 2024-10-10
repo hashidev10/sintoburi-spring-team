@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- 매퍼 인터페이스 경로와 같게 지정  -->
+  <mapper namespace="com.kh.sintoburi.mapper.hc.HcUserMapper">
+  	
+  	<select id="login" resultType="UserVo">
+  		select * from tbl_user
+  		where user_id = #{user_id}
+  		and user_password = #{user_password}
+  	</select>
+  	
+  	<select id="searchByUserId" resultType="UserVo">
+  		select * from tbl_user
+  		where user_id = #{user_id}
+  	</select>
+  	
+  
+  </mapper>

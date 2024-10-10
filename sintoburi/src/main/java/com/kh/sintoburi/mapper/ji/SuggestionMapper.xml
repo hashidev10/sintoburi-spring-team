@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.kh.sintoburi.mapper.ji.SuggestionMapper">
+	
+	<select id="read" resultType="SuggestionVo">
+		select * from tbl_suggestion
+		where parent_no = #{suggestion_no}
+	</select>
+	
+	
+	<select id="getList" resultType="SuggestionVo">
+		select * from tbl_suggestion
+		where product_no = #{product_no}
+		and parent_no in (0, -1) 
+	</select>
+	
+	<insert id="insert">
+	    insert into tbl_suggestion
+	        (suggestion_no, suggestion_content, product_no, user_id)
+	    values
+	        (seq_suggestion.NEXTVAL, #{suggestion_content}, #{product_no}, #{user_id})
+	</insert>
+	
+	<insert id="insertAnswer">
+	    insert into tbl_suggestion
+	        (suggestion_no, suggestion_content, product_no, user_id, parent_no)
+	    values
+	        (seq_suggestion.NEXTVAL, #{suggestion_content}, #{product_no}, #{user_id}, #{suggestion_no})
+	</insert>
+	
+	<update id="update">
+		update tbl_suggestion set
+			suggestion_content = #{suggestion_content},
+			user_id = #{user_id},
+			suggestion_upd_date = sysdate
+		where suggestion_no = #{suggestion_no}
+	</update>
+	
+	<update id="updateParentNo">
+		update tbl_suggestion set
+			parent_no = -1
+		where suggestion_no = #{suggestion_no}
+	</update>
+	
+	<delete id="delete">
+		delete from tbl_suggestion
+		where suggestion_no = #{suggestion_no}
+	</delete>
+	
+</mapper>

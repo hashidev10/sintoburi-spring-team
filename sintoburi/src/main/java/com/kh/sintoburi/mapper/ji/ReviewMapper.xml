@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kh.sintoburi.mapper.ji.ReviewMapper">
+
+	<!-- 리뷰 추가 -->
+    <insert id="insertReview" parameterType="ReviewVo">
+        INSERT INTO tbl_review (review_no, review_content, review_rating, product_no, user_id, review_reg_date, review_upd_date)
+        VALUES (seq_review.nextval, #{review_content}, #{review_rating}, #{product_no}, #{user_id}, SYSDATE, SYSDATE)
+    </insert>
+
+    <!-- 특정 상품의 리뷰 조회 (정렬 기준 적용) -->
+    <select id="selectReviewsByProductNo" resultType="ReviewVo">
+        SELECT review_no, review_content, review_rating, product_no, user_id, review_reg_date
+        FROM tbl_review
+        WHERE product_no = #{product_no}
+        <choose>
+            <when test="sortOrder == 'highest'">
+                ORDER BY review_rating DESC
+            </when>
+            <when test="sortOrder == 'lowest'">
+                ORDER BY review_rating ASC
+            </when>
+            <otherwise>
+                ORDER BY review_reg_date DESC
+            </otherwise>
+        </choose>
+    </select>
+    
+    <!-- 리뷰 평점 -->
+    <select id="selectAverageRating" resultType="Double" parameterType="int">
+	    select avg(review_rating) as average_rating
+	    from tbl_review
+	    where product_no = #{product_no}
+	</select>
+	
+	<delete id="deleteReview">
+		delete from tbl_review
+		where review_no = #{review_no}
+	</delete>
+	
+	
+</mapper>

@@ -1,0 +1,229 @@
+@charset "UTF-8";
+
+/* styles.css */
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    box-sizing: border-box;
+}
+/* body, html { */
+/*     margin: 0; */
+/*     padding: 0; */
+/*     font-family: Copperflate, Fantasy; */
+/*     font-weight: 700; */
+/*     box-sizing: border-box; */
+/* } */
+
+/* 지환이 추가한 스타일 */
+.product-list {
+	margin-top: 20px;
+}
+
+.nav-tabs .nav-link {
+    border: 1px solid #ddd;          /* 사각 테두리 추가 */
+    padding: 10px 15px;              /* 내부 여백 설정 */
+    white-space: nowrap;             /* 텍스트 줄 바꿈 방지 */
+    border-radius: 5px;              /* 테두리 둥글게 만들기 */
+    margin-right: 10px;              /* 탭 간 간격 설정 */
+    background-color: white;         /* 배경색 설정 */
+}
+
+.nav-tabs .nav-link.active {
+    background-color: #f8f9fa;       /* 활성화된 탭의 배경색 설정 */
+    border-color: #ddd;              /* 활성화된 탭의 테두리 색상 */
+}
+
+.nav-tabs {
+    border-bottom: none;             /* 기본 하단 경계선 제거 */
+}
+
+/* 지환이 추가한 스타일 */
+
+
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.main-header {
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.top-bar, .middle-bar, .main-nav {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 1px solid #e7e7e7;
+}
+
+.top-bar {
+    background-color: #f8f8f8;
+    padding: 10px 0;
+}
+
+.top-bar .container {
+    justify-content: space-between;
+    align-items: center;
+}
+
+.announcement {
+    flex-grow: 1;
+    text-align: left;
+    margin-right: 300px; /* 공지사항에 오른쪽 마진 추가 */
+    white-space: nowrap; /* 텍스트를 한 줄로 유지 */
+    overflow: hidden; /* 넘치는 텍스트를 숨김 */
+    text-overflow: ellipsis; /* 넘치는 텍스트를 "..."로 표시 */
+}
+
+.user-menu {
+    flex-grow: 1;
+    text-align: right;
+}
+
+
+.announcement a,
+.user-menu a {
+    text-decoration: none;
+    color: #333;
+    margin-left: 15px;
+}
+
+.middle-bar {
+    padding: 20px 0;
+}
+
+.middle-bar .container {
+    justify-content: center;
+}
+
+.logo img {
+    height: 120px;
+}
+
+.main-nav {
+    padding: 10px 0;
+}
+
+/* 스크롤 시 상단에 고정되도록 설정 */
+.main-nav.sticky {
+    position: fixed;
+    top: 0;
+    z-index: 1001;
+    background-color: #fff;
+    width: 100%;
+}
+
+/* 숨겨진 상태로 설정 */
+.hidden {
+    display: none;
+}
+
+.main-nav ul {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+}
+
+.main-nav ul li {
+    margin-right: 20px;
+}
+
+.main-nav ul li a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    padding: 10px 0;
+}
+
+.search-bar {
+    display: flex;
+    align-items: center;
+}
+
+.search-bar input {
+    width: 300px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 10px;
+}
+
+.search-icon, .cart-icon {
+    text-decoration: none;
+    color: #333;
+    margin-left: 10px;
+}
+
+main {
+    padding-top: 200px; /* 헤더 높이만큼 여백 추가 */
+}
+
+
+/* 푸터 스타일링 */
+.footer {
+    background-color: #f8f8f8;
+    padding: 20px 0;
+    border-top: 1px solid #e7e7e7;
+    margin-top: 20px;
+}
+
+.footer .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.footer-column {
+    flex: 1;
+    margin: 0 10px;
+}
+
+.footer-logo {
+    text-align: center;
+}
+
+.footer-logo img {
+    height: 200px;
+}
+
+.footer-details {
+    text-align: left;
+}
+
+.footer-contact {
+    text-align: right;
+}
+
+.footer-contact p, .footer-details p {
+    margin: 5px 0;
+}
+
+.footer-social a {
+    margin-left: 10px;
+}
+
+.footer-copy {
+    margin-top: 10px;
+    font-size: 0.9em;
+    color: #777;
+}
+
+
+
+

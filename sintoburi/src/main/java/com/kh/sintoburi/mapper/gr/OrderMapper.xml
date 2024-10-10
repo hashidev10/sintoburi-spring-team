@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="com.kh.sintoburi.mapper.gr.OrderMapper">
+  
+<!--   주문하기 생성 -->
+  <insert id="insert">
+  	<selectKey keyProperty="ono" order="BEFORE"
+			resultType="int">
+			select seq_order.nextval from dual
+		</selectKey>
+    insert into tbl_order
+		(ono, user_phone, user_name, address, user_id)
+  	values
+  		(#{ono}, #{user_phone}, #{user_name}, #{address}, #{user_id})
+  </insert>
+  
+<!--   배송정보 입력하기 -->
+  <select id="getDeliveryInfo" resultType="DeliveryDto">
+  	select user_name, user_phone, address
+	from tbl_user
+	where user_id = #{user_id}
+  </select>
+  
+<!--   배송료 계산(30000원 미만 3000원) -->
+  <update id="updateDeliveryCharge">
+  	update tbl_order set
+	   delivery_charge = (
+	 select CASE WHEN sum_total >= 30000 THEN 0 
+			    ELSE 3000 
+			END AS delivery_charge from
+	 (select  sum(total) sum_total
+	 from (select (p.price * d.p_count) total
+	         from tbl_product p, tbl_order_detail d
+	         where p.product_no = d.product_no
+	         and d.ono = #{ono})))
+	where ono = #{ono}
+  </update>
+  
+<!--   물건 가격 합계 -->
+  <update id="updateSumTotal">
+	  update tbl_order set
+		sum_total = (
+		select sum(total) 
+	 	from (select (p.price * d.p_count) total
+	         from tbl_product p, tbl_order_detail d
+	         where p.product_no = d.product_no
+	         and d.ono = #{ono}))
+	  where ono = #{ono}
+  </update>
+  
+<!--   결제 금액 -->
+  <update id="updatePayAmount">
+  	UPDATE tbl_order 
+	SET PAY_AMOUNT = (select sum_total 
+                      from tbl_order
+                      where ono = #{ono}) + delivery_charge
+	WHERE ono = #{ono}
+  </update>
+  
+<!--   주문정보 목록 -->
+  <select id="getOrderList" resultType="OrderDto">
+		select o.ono, o.user_phone, o.user_name, o.address, 
+  			o.delivery_charge, o.delivery_status, o.payment_type, 
+  			o.pay_amount, o.sum_total, o.delivery_status, o.delivery_number, 
+  			u.user_point,
+        	CASE WHEN payment_state = '0' THEN '결제전' 
+		    ELSE '결제완료' 
+        	end as p_state
+        from tbl_order o, tbl_user u
+		where o.user_id = #{user_id}
+        and o.user_id = u.user_id
+		order by ono desc
+  </select>
+ 
+<!--  주문상세 생성  -->
+<!-- 지환 TODO !!!!!!!!!!!!!!!!!!!!!!-->
+ <insert id="insertDetail"> 
+  	insert into tbl_order_detail
+  		(odno, ono, product_no, p_count)
+  	values
+  		(seq_order_detail.nextval, #{ono}, #{product_no}, #{p_count})
+  </insert> 
+  
+<!-- 주문상세 정보(주문번호 누르면 주문상세로 이동)   -->
+  <select id="getDetailList" resultType="OrderDetailDto">
+  	select o.user_id, o.ono, p.product_no, p.product_name, (i.img_path || i.uuid || '_' || i.img_name) img_path, d.p_count, p.price, o.delivery_status, o.order_date
+	from tbl_product p, tbl_img i, tbl_order_detail d, tbl_order o
+		where o.ono =  #{ono}
+<!-- 	    and o.user_id = #{user_id} -->
+	    and o.ono= d.ono
+	    and d.product_no = p.product_no
+	    and p.product_no = i.product_no
+	order by o.order_date desc
+  </select>
+  
+<!--   결제하기(가격빼기) -->
+  <select id="payment" resultType ="PaymentDto">
+  select ono, u.user_point current_point, pay_amount,(u.user_point - pay_amount) remain_point, payment_state
+        from (select a.ono, a.pay_amount, a.payment_state
+              from(select *
+                  from tbl_order o
+                  order by ono desc) a), tbl_user u
+   where user_id = #{user_id}
+   and ono = #{ono}
+  </select>
+  
+<!--   결제 후 포인트 갱신 -->
+  <update id="updatePoint">
+  	update tbl_user 
+  	set user_point = #{remain_point} 
+  	where user_id = #{user_id}
+  </update>
+  
+<!--   결제 후 결제완료 상태 갱신 -->
+  <update id="updatePaymentState">
+	  update tbl_order
+	  set payment_state = '1'
+	  where ono = #{ono}
+  </update>
+  
+<!--   결제 후 결제완료 목록 -->
+	<select id="getPaymentList" resultType="OrderDto">
+		select ono, user_phone, user_name, address, 
+  			delivery_charge, delivery_status, 
+  			pay_amount, sum_total, order_date
+        from tbl_order
+		where user_id = #{user_id}
+        and payment_state = '1'
+		order by ono desc
+  </select>
+  
+ </mapper>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.kh.sintoburi.mapper.hn.EnquiryReplyMapper">
+
+<!-- 답변작성 -->
+<insert id="insertReply">
+    insert into tbl_manager_reply 
+    (rno, eno, user_id, reply_content, manager_id)
+    values 
+    (seq_reply.nextval, #{eno}, #{user_id}, #{reply_content}, #{manager_id})
+</insert>
+
+  
+ <!-- 답변게시글 목록 -->
+  <select id="selectReply" resultType="EnquiryReplyVo">
+  	select * from tbl_manager_reply
+  	order by eno
+  </select>
+  
+  <!--  답변게시글 한개 데이터 -->
+  <select id="selectByReplyEno" resultType="EnquiryReplyVo">
+  	select * from tbl_manager_reply
+  	where eno = ${eno}
+  </select>
+  
+ </mapper>  

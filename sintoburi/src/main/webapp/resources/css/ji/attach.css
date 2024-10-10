@@ -1,0 +1,34 @@
+@charset "UTF-8";
+#divDrop {
+	margin: auto;
+	width: 70%;
+	height: 100px;
+	line-height: 100px;
+	background: aquamarine;
+	border: 2px dashed Orange;
+	text-align: center;
+}
+
+.bigPictureWrapper {
+	position: absolute;
+	display: none;
+	justify-content: center;
+	align-items: center;
+	top: 0%;
+	width: 100%;
+	height: 100%;
+	background-color: #88cccccc;
+	z-index: 100;
+}
+
+.bigPicture {
+	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+#uploadedList > li {
+	list-style-type: none;
+	float: left;
+}

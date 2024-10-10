@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- 매퍼 인터페이스 경로와 같게 지정  -->
+  <mapper namespace="com.kh.sintoburi.mapper.hc.BlogSettingMapper">
+  	
+  	<insert id="insertSetting">
+  		insert into tbl_blog_setting 
+  			(user_id, blog_category, config_name, config_value, blog_priority, isMain, isVisible )
+  		values (#{user_id}, #{blog_category}, #{config_name}, #{config_value}, #{blog_priority}, #{isMain}, #{isVisible} )
+  	</insert>
+  	
+  	<select id="getBlogSettingList" resultType="BlogSettingVo">
+  		select * from tbl_blog_setting
+  		where user_id = #{user_id}
+  		order by 
+	    case blog_category
+	        when 'T' then 1
+	        when 'M' then 2
+	        when 'B' then 3
+	        else 4
+	    end, 
+	    blog_priority asc
+  	</select>
+  	
+	<delete id="deleteBlogSettingListByCategory">
+		delete from tbl_blog_setting
+		where user_id = #{user_id} and blog_category = #{blog_category}
+	</delete>
+  	<update id="modifySetting">
+  		update tbl_blog_setting
+  		set isMain = #{isMain}, isVisible = #{isVisible}, blog_category = #{blog_category}, config_value = #{config_value}, blog_priority = #{blog_priority}
+  		where user_id = #{user_id} and config_name = #{config_name}
+  	</update>
+  	
+  	<delete id="deleteSetting">
+  		delete from tbl_blog_setting
+  		where user_id = #{user_id} and config_name = #{config_name}
+  	</delete>
+  
+  </mapper>

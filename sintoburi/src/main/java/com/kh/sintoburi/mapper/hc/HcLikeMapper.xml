@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- 매퍼 인터페이스 경로와 같게 지정  -->
+  <mapper namespace="com.kh.sintoburi.mapper.hc.HcLikeMapper">
+  	<insert id="addLike">
+  		insert into tbl_blog_like (user_id, blog_no)
+  		values (#{user_id}, #{blog_no})
+  	</insert>
+  	
+  	<delete id="removeLike">
+  		delete from tbl_blog_like
+  		where 
+  		user_id = #{user_id} 
+  		and 
+  		blog_no = #{blog_no}
+  	</delete>	
+  	
+  	<select id="getLikeCount" resultType="int">
+  		select count(*) from tbl_blog_like
+  		where blog_no = #{blog_no}
+  	</select>
+  	
+  	<select id="isCheckLike" resultType="HcLikeDto">
+  		select * from tbl_blog_like
+  		where blog_no = #{blog_no} 
+  		and
+  		user_id = #{user_id}
+  	</select>
+  
+  </mapper>

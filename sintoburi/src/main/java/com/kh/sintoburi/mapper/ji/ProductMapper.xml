@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kh.sintoburi.mapper.ji.ProductMapper">
+
+
+	<!-- insert -->
+	<insert id="Insert">
+		insert into tbl_product
+		(product_no, product_name, details, price, stock, status, cate_no, summary)
+		values
+		(#{seq_product.nextval}, #{product_name}, #{details}, #{price},
+		#{stock}, #{status}, #{cate_no}, #{summary})
+	</insert>
+
+	<!-- 상품 등록 테스트 -->
+	<insert id="InsertSelectKey">
+		<selectKey keyProperty="product_no" order="BEFORE" resultType="int">
+			select seq_product.nextval from dual
+		</selectKey>
+		insert into tbl_product
+		(product_no, product_name, details, price, stock, status, cate_no, summary, user_id)
+		values
+		(#{product_no}, #{product_name}, #{details}, #{price}, #{stock},
+		#{status}, #{cate_no}, #{summary}, #{user_id})
+	</insert>
+
+	<!-- 상품 목록 productMain -->
+	<select id="getProducts" resultType="DefaultProductListDto">
+		<trim prefixOverrides="union all">
+			<foreach collection="cates" item="arr">
+				<trim prefix="union all">
+					select p.product_no, p.product_name, p.price,
+					p.cate_no, p.user_id, i.uuid, i.img_name, i.img_path
+					from (select *
+					from (
+					select rownum rn, a.*
+					from (select *
+					from tbl_product
+					where cate_no = #{arr}
+					order by stock desc, price desc
+					) a
+					)
+					where rn &lt;= 4) p
+					,
+					(select * from tbl_img
+					where represent = '1') i
+					where p.product_no = i.product_no
+				</trim>
+			</foreach>
+		</trim>
+	</select>
+
+	<!-- 카테고리별 상품 출력 / productByCate -->
+	<select id="selectProductsByCate"
+		resultType="DefaultProductListDto">
+		select p.product_no, p.product_name, p.price, p.cate_no,
+		p.user_id, i.uuid, i.img_name, i.img_path
+		from (select *
+		from (
+		select rownum rn, a.*
+		from (select *
+		from tbl_product
+		where cate_no = #{cate_no}
+		order by stock desc, price desc
+		) a
+		)
+		) p
+		,
+		(select * from tbl_img
+		where represent = '1') i
+		where p.product_no = i.product_no
+	</select>
+	
+	<select id="selectSearchProducts" resultType="DefaultProductListDto">
+		select p.product_no, p.product_name, p.price, p.cate_no,
+		p.user_id, i.uuid, i.img_name, i.img_path
+		from (select *
+		from (
+		select rownum rn, a.*
+		from (select *
+		from tbl_product
+		<where>
+		<choose>
+			<when test="type == 'P'.toString()">
+				product_name like '%' || #{keyword} || '%'
+			</when>
+			<when test="type == 'U'.toString()">
+				user_id like '%' || #{keyword} || '%'
+			</when>
+		</choose>
+		</where>
+		
+		
+		order by stock desc, price desc
+		) a
+		)
+		) p
+		,
+		(select * from tbl_img
+		where represent = '1') i
+		where p.product_no = i.product_no
+	</select>
+	
+	<!-- 상품 상세보기 / productDetail-->
+	<select id="selectByPno" resultType="ProductVo">
+		select * from tbl_product
+		where product_no = #{product_no}
+	</select>
+	
+	<!-- 동일 유저가 등록한 연관된 상품 가져오기 -->
+	<select id="selectRelatedProdByUser" resultType="RelatedProdDto">
+		select
+		p.product_no, p.product_name, p.price, p.user_id,
+		i.uuid,
+		i.img_path,
+		i.img_name
+		from tbl_product p
+		join tbl_img i on p.product_no = i.product_no
+		where p.user_id = #{user_id}
+		and p.product_no != #{product_no}
+		and i.represent = 1
+	</select>
+
+	<!-- 마이페이지에서 상품리스트 출력 (유저) -->
+	<select id="selectProductsByUser" resultType="ProductListDto">
+		select
+		p.product_no, p.product_name, p.price, p.stock, p.status, p.reg_date,
+		p.upd_date, p.user_id
+		from tbl_product p
+		join tbl_user u on p.user_id = u.user_id
+		where p.user_id = #{user_id}
+	</select>
+
+
+	<!-- delete -->
+	<!-- 마이페이지에서 상품삭제 (유저) -->
+	<delete id="delete">
+		delete from tbl_product
+		where product_no =
+		#{product_no}
+	</delete>
+	
+	<!-- productList에서 상품 수정 -->
+	<update id="updateProduct" parameterType="ProductVo">
+		update tbl_product
+		set product_name = #{product_name},
+		summary = #{summary},
+		details = #{details},
+		price = #{price},
+		stock = #{stock},
+		status = #{status},
+		cate_no = #{cate_no}
+		where product_no = #{product_no}
+	</update>
+
+	<!-- 문의사항 갱신 -->
+	<update id="updateSuggestionCnt">
+		update tbl_product set
+			suggestioncnt = suggeestioncnt + #{amount}
+		where product_no = #{product_no}
+	</update>
+	
+	<!-- 리뷰 갱신 -->
+	<update id="updateReviewCnt">
+		update tbl_product set
+			reviewcnt = reviewcnt + #{amount}
+		where product_no = #{product_no}
+	</update>
+	
+</mapper>

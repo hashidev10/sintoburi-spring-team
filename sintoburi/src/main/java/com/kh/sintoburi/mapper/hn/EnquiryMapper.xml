@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.kh.sintoburi.mapper.hn.EnquiryMapper">
+
+ 	  <select id="getList" resultType="EnquiryVo">
+ 	    select * from tbl_enquiry
+	 	where user_id = #{user_id}
+	 	order by eno desc
+ 	  </select>
+ 	  
+<!-- 로그인한 유저 문의사항 페이징처리 -->
+ <select id="getWithPaging" resultType="EnquiryVo">
+    select *
+    from (
+        select
+            eno,
+            user_id,
+            enquiry_type,
+            status,
+            write_date,
+            row_number() over (order by eno desc) as rn
+        from tbl_enquiry
+        
+    ) subquery
+    where rn &gt; (#{pageNum} - 1) * #{amount}
+      and rn &lt;= #{pageNum} * #{amount}
+      and user_id = #{user_id}
+</select>
+
+<!-- 전체 게시글 갯수 -->
+	<select id="getTotalCount" resultType="int">
+		select count(*) from tbl_enquiry
+		<where>
+			<if test="type != null">
+				<trim prefix="(" suffix=")" prefixOverrides="or">
+					<foreach item="type" collection="typeArr">
+						<trim prefix="or">
+							<choose>
+                                <when test="type == 'E'.toString()">
+                                    eno like '%' || #{keyword} || '%'
+                                </when>
+                                <when test="type == 'I'.toString()">
+                                    user_id like '%' || #{keyword} || '%'
+                                </when>
+                                <when test="type == 'S'.toString()">
+	                                status like '%' || #{keyword} || '%'
+	                            </when>
+                            </choose>
+						</trim>
+					</foreach>
+				</trim>
+			</if>
+		</where>
+	</select> 
+ 	  
+ 	  
+ 	  <!-- 상품 페이징처리 -->
+ <select id="getGoodsWithPaging" resultType="EnquiryVo">
+    select *
+    from (
+        select
+            eno,
+            user_id,
+            enquiry_type,
+            status,
+            write_date,
+            ROW_NUMBER() OVER (
+                ORDER BY 
+                    CASE 
+                        WHEN status = '미처리' THEN 1 
+                        ELSE 0 
+                    END DESC, 
+                   eno DESC
+            ) AS rn
+        from tbl_enquiry
+        <where>
+        enquiry_type != '등급문의'
+           <if test="type != null">
+                <trim prefix="and (" suffix=")" prefixOverrides="or">
+                    <foreach item="type" collection="typeArr" separator="or">
+                        <choose>
+                        	<when test="type == 'A'.toString()">
+                                1=1
+                            </when>
+                            <when test="type == 'E'.toString()">
+                                eno LIKE '%' || #{keyword} || '%'
+                            </when>
+                            <when test="type == 'I'.toString()">
+                                user_id LIKE '%' || #{keyword} || '%'
+                            </when>
+                            <when test="type == 'S'.toString()">
+                                status LIKE '%' || #{keyword} || '%'
+                            </when>
+                        </choose>
+                    </foreach>
+                </trim>
+            </if>
+        </where>
+    ) subquery
+    where rn &gt; (#{pageNum} - 1) * #{amount}
+      and rn &lt;= #{pageNum} * #{amount}
+</select>
+
+ <!-- 상품문의 게시글 갯수 -->
+	<select id="goodsTotalCount" resultType="int">
+		select count(*) from tbl_enquiry
+		<where>
+		 enquiry_type != '등급문의'
+			<if test="type != null">
+				<trim prefix="and(" suffix=")" prefixOverrides="or">
+					<foreach item="type" collection="typeArr">
+						<trim prefix="or">
+							<choose>
+                               <when test="type == 'A'.toString()">
+                                1=1
+	                            </when>
+	                            <when test="type == 'E'.toString()">
+	                                eno LIKE '%' || #{keyword} || '%'
+	                            </when>
+	                            <when test="type == 'I'.toString()">
+	                                user_id LIKE '%' || #{keyword} || '%'
+	                            </when>
+	                            <when test="type == 'S'.toString()">
+	                                status LIKE '%' || #{keyword} || '%'
+	                            </when>
+                            </choose>
+						</trim>
+					</foreach>
+				</trim>
+			</if>
+		</where>
+	</select> 
+
+<!-- 등급 페이징처리 -->
+ <select id="getGradeWithPaging" resultType="EnquiryVo">
+    select *
+    from (
+        select
+            eno,
+            user_id,
+            enquiry_type,
+            status,
+            write_date,
+           ROW_NUMBER() OVER (
+                ORDER BY 
+                    CASE 
+                        WHEN status = '미처리' THEN 1 
+                        ELSE 0 
+                    END DESC, 
+                    eno DESC
+            ) AS rn
+        from tbl_enquiry
+        <where>
+         enquiry_type = '등급문의'
+           <if test="type != null">
+                <trim prefix="and(" suffix=")" prefixOverrides="or">
+                    <foreach item="type" collection="typeArr" separator="or">
+                        <choose>
+                             <when test="type == 'A'.toString()">
+                                1=1
+	                            </when>
+	                            <when test="type == 'E'.toString()">
+	                                eno LIKE '%' || #{keyword} || '%'
+	                            </when>
+	                            <when test="type == 'I'.toString()">
+	                                user_id LIKE '%' || #{keyword} || '%'
+	                            </when>
+	                            <when test="type == 'S'.toString()">
+	                                status LIKE '%' || #{keyword} || '%'
+	                            </when>
+                        </choose>
+                    </foreach>
+                </trim>
+            </if>
+        </where>
+    ) subquery
+    where rn &gt; (#{pageNum} - 1) * #{amount}
+      and rn &lt;= #{pageNum} * #{amount}
+     
+</select>
+
+ <!-- 등급문의 게시글 갯수 -->
+	<select id="gradeTotalCount" resultType="int">
+		select count(*) from tbl_enquiry
+		<where>
+		enquiry_type = '등급문의'
+			<if test="type != null">
+				<trim prefix="and(" suffix=")" prefixOverrides="or">
+					<foreach item="type" collection="typeArr">
+						<trim prefix="or">
+							<choose>
+                                <when test="type == 'A'.toString()">
+                                1=1
+	                            </when>
+	                            <when test="type == 'E'.toString()">
+	                                eno LIKE '%' || #{keyword} || '%'
+	                            </when>
+	                            <when test="type == 'I'.toString()">
+	                                user_id LIKE '%' || #{keyword} || '%'
+	                            </when>
+	                            <when test="type == 'S'.toString()">
+	                                status LIKE '%' || #{keyword} || '%'
+	                            </when>
+                            </choose>
+						</trim>
+					</foreach>
+				</trim>
+			</if>
+		</where>
+	</select> 
+ 	  
+ 	  
+ 	  
+ 	  <!--상품 문의사항 목록 -->
+ 	  <select id="goodsGetList" resultType="EnquiryVo">
+        select * from tbl_enquiry
+        where enquiry_type != '등급문의'
+		order by eno 
+    </select>
+    
+    <!-- 등급 문의사항 목록 -->
+    
+    <select id="gradeGetList" resultType="EnquiryVo">
+        select * from tbl_enquiry
+        where enquiry_type = '등급문의'
+		order by eno 
+    </select>
+  
+   <!-- 문의사항 등록 --> 
+    <insert id="insert">
+    	<selectKey keyProperty="eno" order="BEFORE"
+			resultType="int">
+			select seq_enquiry.nextval from dual
+		</selectKey>
+    insert into tbl_enquiry
+    (eno, user_id, enquiry_type, content)
+    values
+    (#{eno}, #{user_id}, #{enquiry_type}, #{content})
+</insert>
+   
+    <!-- 문의사항 수정 -->
+      <update id="update" >
+        update tbl_enquiry
+        set user_id = #{user_id},
+            enquiry_type = #{enquiry_type},
+            content = #{content}
+        where eno = #{eno}
+    </update>
+  
+  <!--  문의사항삭제 -->  
+       <delete id="delete" >
+        delete from tbl_enquiry
+        where eno = #{eno}
+    </delete>
+   
+   <!-- 문의사항 한개 데이터 --> 
+       <select id="selectByEno" resultType="EnquiryVo" >
+        select * from tbl_enquiry
+        where eno = #{eno}
+    </select>
+    
+    <!--상품문의사항 답변 완료 -->
+  	<update id="updateStatus">
+  		update tbl_enquiry
+        set status = '답변완료'
+        where eno = #{eno} 
+       
+  	</update>
+  	
+  	 <!-- 등급 문의사항 답변 완료 -->
+  	<update id="gradeUpdateStatus">
+  		update tbl_enquiry
+        set status = #{status}
+        where eno = #{eno} 
+        and enquiry_type = '등급문의'
+  	</update>
+    
+    <!--  첨부파일등록 -->
+      <insert id="imageInsert">
+		insert into tbl_enquiry_image
+			(uuid, eno, upload_path, image_name)
+		values
+			(#{uuid}, #{eno}, #{upload_path}, #{image_name})
+	</insert>
+	
+	<!-- 문의사항 첨부파일  -->
+	<select id="getImage" resultType="EnquiryImageVo">
+		select * from tbl_enquiry_image
+		where eno = #{eno}
+	</select>
+	
+	<!-- 첨부파일 삭제 -->
+	<delete id="imageDelete">
+		delete from tbl_enquiry_image
+		where eno = #{eno}
+	</delete>
+	
+	<!-- 이미지 1개 삭제 -->
+	<delete id="choiceImageDelete">
+		delete from tbl_enquiry_image
+		where uuid = #{uuid}
+	</delete>
+	
+	<!--미처리답변알림 -->
+	<select id="noReplyShow" resultType="EnquiryVo">
+		 select * 
+        from (
+            select *
+            from tbl_enquiry
+            where status = '미처리'
+            order by eno desc
+        )
+        where rownum &lt;= 4
+	</select>
+  
+  </mapper>

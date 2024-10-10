@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kh.sintoburi.mapper.hn.FaqMapper">
+<!-- 자주하는질문 등록 -->
+<insert id="insertFaq">
+	insert into tbl_faq(f_no,title,content)
+	values (seq_faq.nextVal,#{title} ,#{content})
+</insert>
+
+<!--  자주하는질문 목록 -->
+<select id="selectFaq" resultType="FaqVo">
+	select * from tbl_faq
+	order by f_no desc
+</select>
+
+<!--  자주하는질문 페이징 -->
+	<select id="getFaqPaging" resultType="FaqVo">
+    select *
+    from (
+        select
+            f_no,
+			title,
+			content,
+			write_date,
+            row_number() over (order by f_no desc) as rn
+        from tbl_faq
+        <where>
+            
+           <if test="type != null">
+                <trim prefix="(" suffix=")" prefixOverrides="or">
+                    <foreach item="type" collection="typeArr" separator="or">
+                        <choose>
+                        	 <when test="type == 'A'.toString()">
+                                1=1
+                            </when>
+                            <when test="type == 'T'.toString()">
+                                title LIKE '%' || #{keyword} || '%'
+                            </when>
+                            <when test="type == 'F'.toString()">
+                                f_no like '%' || #{keyword} || '%'
+                            </when>
+                        </choose>
+                    </foreach>
+                </trim>
+            </if>
+        </where>
+    ) subquery
+  where rn &gt; (#{pageNum} - 1) * #{amount}
+		and rn &lt;= #{pageNum} * #{amount}
+</select>
+
+<!-- 게시글 갯수 -->
+	<select id="getTotalCount" resultType="int">
+		select count(*) from tbl_faq
+		<where>
+			<if test="type != null">
+				<trim prefix="(" suffix=")" prefixOverrides="or">
+					<foreach item="type" collection="typeArr">
+						<trim prefix="or">
+							<choose>
+                                <when test="type == 'A'.toString()">
+                                1=1
+                            </when>
+                            <when test="type == 'T'.toString()">
+                                title LIKE '%' || #{keyword} || '%'
+                            </when>
+                            <when test="type == 'F'.toString()">
+                                    f_no LIKE '%' || #{keyword} || '%'
+                               </when>
+                                
+                            </choose>
+						</trim>
+					</foreach>
+				</trim>
+			</if>
+		</where>
+	</select> 
+	
+
+<!-- 데이터1개 -->
+<select id="selectByFno" resultType="FaqVo">
+	select * from tbl_faq
+	where f_no = #{f_no}
+</select>
+
+<!-- 수정 -->
+<update id="updateFaq">
+	update tbl_faq set
+	title = #{title},
+	content = #{content}
+	where f_no = #{f_no}
+</update>
+
+<!-- 삭제 -->
+
+<delete id="deleteFaq">
+	delete from tbl_faq
+	where f_no = #{f_no}
+</delete>
+
+</mapper>

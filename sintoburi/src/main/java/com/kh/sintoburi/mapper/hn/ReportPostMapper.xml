@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.kh.sintoburi.mapper.hn.ReportPostMapper">
+  <!-- 신고게시글목록 -->
+  <select id="selectReport" resultType="ReportPostVo">
+  	select * from tbl_reportPost
+  	order by re_no
+  </select>
+  
+   <!--  페이징처리 -->
+ <select id="getReportPaging" resultType="ReportPostVo">
+    select *
+    from (
+        select
+            re_no,
+            post_url,
+            post_id,
+            re_reason,
+            re_id,
+            re_date,
+            status,
+            delete_url,
+            category,
+            write_num,
+            row_number() over (order by case when status = '미처리' then 1 else 0 end desc,re_no desc) as rn
+        from tbl_reportPost
+        <where>
+            <if test="typeArr != null and typeArr.length > 0">
+                <trim prefix="(" suffix=")" prefixOverrides="or">
+                    <foreach item="type" collection="typeArr" separator="or">
+                        <choose>
+                       	  <when test="type == 'A'.toString()">
+                               1=1
+                            </when>
+                            <when test="type == 'N'.toString()">
+                               re_no LIKE '%' || #{keyword} || '%'
+                            </when>
+                            <when test="type == 'W'.toString()">
+                                post_id LIKE '%' || #{keyword} || '%'
+                            </when>
+                              <when test="type == 'S'.toString()">
+	                            status like '%' || #{keyword} || '%'
+	                          </when>
+                        </choose>
+                    </foreach>
+                </trim>
+            </if>
+        </where>
+    ) subquery
+    WHERE rn &gt; (#{pageNum} - 1) * #{amount}
+      AND rn &lt;= #{pageNum} * #{amount}
+</select>
+
+ <!-- 게시글 갯수 -->
+	<select id="getTotalCount" resultType="int">
+		select count(*) from tbl_reportPost
+		<where>
+			<if test="type != null">
+				<trim prefix="(" suffix=")" prefixOverrides="or">
+					<foreach item="type" collection="typeArr">
+						<trim prefix="or">
+							<choose>
+                                <when test="type == 'N'.toString()">
+                              	 	re_no LIKE '%' || #{keyword} || '%'
+	                            </when>
+	                            <when test="type == 'W'.toString()">
+	                               post_id LIKE '%' || #{keyword} || '%'
+                           		 </when>
+                           		   <when test="type == 'S'.toString()">
+	                                status like '%' || #{keyword} || '%'
+	                            </when>
+                            </choose>
+						</trim>
+					</foreach>
+				</trim>
+			</if>
+		</where>
+	</select> 
+  
+  <insert id="insertReport">
+  <selectKey keyProperty="re_no" order="BEFORE"
+			resultType="int">
+			select seq_reportpost.nextval from dual
+		</selectKey>
+  	insert into tbl_reportPost 
+	(re_no, post_no, post_url, post_id, re_reason, re_id, status,delete_url) 
+	values (seq_reportpost.nextval, #{post_no}, #{post_url}, 
+	#{post_id},  #{re_reason},#{re_id}, #{status}, #{delete_url});
+
+  </insert>
+<!-- 신고게시글한개 -->  
+  <select id="selectByReNo" resultType="ReportPostVo">
+	  select * from tbl_reportPost
+	  where re_no = #{re_no}
+  </select>
+  
+  
+   <!--신고사항 답변 완료 -->
+  	<update id="updateStatus">
+  		update tbl_reportPost
+        set status = '처리완료'
+        where re_no = #{re_no} 
+       
+  	</update>
+  
+</mapper>

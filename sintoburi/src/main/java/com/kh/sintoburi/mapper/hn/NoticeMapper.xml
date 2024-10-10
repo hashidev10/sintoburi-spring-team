@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kh.sintoburi.mapper.hn.NoticeMapper">
+
+	<!-- 공지사항 목록 -->
+
+	<select id="selectNotice" resultType="NoticeVo">
+		select * from tbl_notice
+		order by n_no desc
+	</select>
+	
+	<!-- 관리자 공지사항 목록 -->
+	<select id="selectManagerNotice" resultType="NoticeVo">
+		select * from tbl_notice
+		where important = 'M'
+	</select>
+
+	
+	<!--  공지사항 페이징 -->
+	<select id="getNoticePaging" resultType="NoticeVo">
+    select *
+    from (
+        select
+            n_no,
+			title,
+			content,
+			write_date,
+			image,
+			important,
+            row_number() over (
+				order by 
+                case 
+                    when important = 'Y' then 1 
+                    else 2 
+                end,
+                n_no desc
+		) as rn
+        from tbl_notice
+        <where>
+         important not in('M') 
+           <if test="type != null">
+                <trim prefix="and(" suffix=")" prefixOverrides="or">
+                    <foreach item="type" collection="typeArr" separator="or">
+                        <choose>
+                         <when test="type == 'A'.toString()">
+                                   1=1
+                              </when>
+                            <when test="type == 'T'.toString()">
+                                title LIKE '%' || #{keyword} || '%'
+                            </when>
+                            <when test="type == 'N'.toString()">
+                                    n_no like '%' || #{keyword} || '%'
+                               </when>
+                              <when test="type == 'I'.toString()">
+                                   important = #{keyword}
+                              </when>
+                        </choose>
+                    </foreach>
+                </trim>
+            </if>
+        </where>
+    ) subquery
+  where rn &gt; (#{pageNum} - 1) * #{amount}
+		and rn &lt;= #{pageNum} * #{amount}
+</select>
+
+<!-- 게시글 갯수 -->
+	<select id="getTotalCount" resultType="int">
+		select count(*) from tbl_notice
+		<where>
+			<if test="type != null">
+				<trim prefix="(" suffix=")" prefixOverrides="or">
+					<foreach item="type" collection="typeArr">
+						<trim prefix="or">
+							<choose>
+                               <when test="type == 'T'.toString()">
+                                title LIKE '%' || #{keyword} || '%'
+                            </when>
+                                <when test="type == 'N'.toString()">
+                                    n_no like '%' || #{keyword} || '%'
+                                </when>
+                                
+                            </choose>
+						</trim>
+					</foreach>
+				</trim>
+			</if>
+		</where>
+	</select> 
+	
+	
+	<!-- 공지사항 한개데이터 -->
+	<select id="selectByNno" resultType="NoticeVo">
+		select * from tbl_notice
+		where n_no = #{n_no}
+	
+	</select>
+	
+	<!-- 공지사항 등록 -->
+	<insert id="insertNotice">
+	<selectKey keyProperty="n_no" order="BEFORE"
+			resultType="int">
+			select seq_notice.nextval from dual
+		</selectKey>
+		insert into tbl_notice (n_no,title,content,important)
+		values (#{n_no},#{title},#{content}, #{important})
+	</insert>
+
+	<!-- 공지사항 수정 -->
+	<update id="updateNotice">
+		update tbl_notice set
+		title = #{title},
+		content = #{content},
+		important = #{important}
+		where n_no = #{n_no}
+	</update>
+
+
+	<!-- 공지사항 삭제 -->
+	<delete id="deleteNotice">
+		delete from tbl_notice
+		where n_no = #{n_no}
+	</delete>
+	
+	
+	<!--  공지사항 이전 게시글 -->
+	<select id="getPreviousNotice" resultType="NoticeVo">
+		 select * 
+    from (
+        select * 
+        from tbl_notice 
+        where n_no &lt; #{n_no} 
+        order by n_no desc
+    ) 
+    where rownum = 1
+	
+	</select>
+	
+	
+	<!--  공지사항 다음 게시글 -->
+	<select id="getNextNotice" resultType="NoticeVo">
+	  select * 
+        from (
+            select * 
+            from tbl_notice 
+            where n_no &gt; #{n_no} 
+            order by n_no asc
+        ) 
+        where rownum = 1
+	
+	</select>
+	
+	<!--  공지사항 항목 업데이트 -->
+	<update id="updateImportant">
+		update tbl_notice
+		set important = #{important}
+		where n_no = #{n_no}
+	</update>
+	
+	<!--  관리자 공지사항 보여주기 -->
+	<select id="managerNoticeShow" resultType="NoticeVo">
+		select * from tbl_notice
+		where important = 'M'
+	</select>
+	
+		<!--  중요 공지사항 보여주기 -->
+	<select id="importantNoticeShow" resultType="NoticeVo">
+		select * from tbl_notice
+		where important = 'Y'
+	</select>
+	
+	<!-- 중요공지사항등록시 일반 공지사항으로 변경 -->
+	<update id="changeN">
+		update tbl_notice set
+   			 important = 'N'
+		where important = 'Y'
+	</update>
+	
+	<!-- 관리자 공지사항 등록시 일반 공지사항으로 변경 -->
+	<update id="changeManagerN">
+		update tbl_notice set
+   			 important = 'N'
+		where important = 'M'
+	</update>
+	
+	   <!--  첨부파일등록 -->
+    <insert id="imageInsert">
+		insert into tbl_notice_image
+			(uuid, n_no, upload_path, image_name)
+		values
+			(#{uuid}, #{n_no}, #{upload_path}, #{image_name})
+	</insert>
+	
+	<!-- 문의사항 첨부파일  -->
+	<select id="getImage" resultType="NoticeImageVo">
+		select * from tbl_notice_image
+		where n_no = #{n_no}
+	</select>
+	
+	<!-- 첨부파일 삭제 -->
+	<delete id="imageDelete">
+		delete from tbl_notice_image
+		where n_no = #{n_no}
+	</delete>
+	
+	<!-- 이미지 1개 삭제 -->
+	<delete id="choiceImageDelete">
+		delete from tbl_notice_image
+		where uuid = #{uuid}
+	</delete>
+	
+	
+</mapper>

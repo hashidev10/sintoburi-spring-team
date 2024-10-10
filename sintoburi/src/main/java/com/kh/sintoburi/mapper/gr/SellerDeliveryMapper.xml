@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="com.kh.sintoburi.mapper.gr.SellerDeliveryMapper">
+	  <select id="getDeliveryManageList" resultType="OrderDto">
+		select o.ono, o.user_phone, o.user_name, 
+    		   o.address, o.user_id, o.delivery_charge, o.delivery_status, 
+    		   o.pay_amount, o.sum_total, o.order_date, o.delivery_number, 
+    		   d.product_no
+		from tbl_order o, tbl_product p, tbl_order_detail d
+		where o.ono = d.ono  
+		and  d.product_no = p.product_no 
+		and p.user_id = #{user_id}   
+		and o.payment_state = '1' 
+		order by o.order_date
+
+<!-- 		select ono, user_phone, user_name, address, user_id, -->
+<!--   				delivery_charge, delivery_status,  -->
+<!--   				pay_amount, sum_total, order_date,delivery_number -->
+<!--         from tbl_order -->
+<!--         where payment_state = '1' -->
+<!-- 		order by order_date -->
+	  </select>
+	  
+	  
+	  
+	  <update id="updateDeliveryStatus">
+	    update tbl_order set
+		delivery_status = #{delivery_status},
+		delivery_number = #{delivery_number}
+	 	where ono = #{ono}
+	  </update>
+  </mapper>
+  
+ 

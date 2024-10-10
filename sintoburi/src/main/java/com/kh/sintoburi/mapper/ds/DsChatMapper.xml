@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.kh.sintoburi.mapper.ds.DsChatMapper">
+
+
+<insert id="insert">
+	insert into tbl_chat
+	(cno, user_id, user_name, chat_log)
+	values
+	(seq_chat.nextval, #{user_id}, #{user_name}, #{chat_log})
+</insert>
+
+
+
+
+
+</mapper>

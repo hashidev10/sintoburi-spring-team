@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- 매퍼 인터페이스 경로와 같게 지정  -->
+  <mapper namespace="com.kh.sintoburi.mapper.hc.HcAttachMapper">
+  
+  	<insert id="insert">
+  		insert into tbl_blog_img(uuid, file_name, file_path, blog_no)
+  		values (#{uuid}, #{file_name}, #{file_path}, #{blog_no})
+  	</insert>
+  	
+  	<select id="getAttachList" resultType="HcAttachFileDto">
+  		select * from tbl_blog_img
+  		where blog_no = #{blog_no}
+  	</select>
+  	
+  	<delete id="deleteAll">
+  		delete from tbl_blog_img
+  		where blog_no = #{blog_no}
+  	</delete>
+  	
+  	<delete id="deleteByUuid">
+  		delete from tbl_blog_img
+  		where uuid = #{uuid}
+  	</delete>
+  	
+  	<update id="update">
+  		update tbl_blog_img
+  		set file_path = #{file_path}, file_name = #{file_name}
+  		where uuid = #{uuid}
+  	</update>
+  	
+  	<select id="getOldAttachList" resultType="HcAttachFileDto">
+  		select * from tbl_blog_img
+		where file_path = 'E:/upload/' ||
+		 (select TO_CHAR(sysdate - 1, 'YYYY/MM/DD') from dual)
+		 <!-- (select sysdate - 1 from dual); -->
+  	</select>
+  	
+  	
+  
+  </mapper>

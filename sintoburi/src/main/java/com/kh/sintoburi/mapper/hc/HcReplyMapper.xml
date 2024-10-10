@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- 매퍼 인터페이스 경로와 같게 지정  -->
+  <mapper namespace="com.kh.sintoburi.mapper.hc.HcReplyMapper">
+  	
+  	<select id="getReplyListByBlog_no" resultType="HcReplyDto">
+  		select * from tbl_blog_reply
+  		where blog_no = #{blog_no}
+  	</select>
+  	
+  	<insert id="insertReply">
+  		insert into tbl_blog_reply(blog_rno, blog_no, replyer, reply_content, regdate)
+  		values (seq_blog_reply.nextval, #{blog_no}, #{replyer}, #{reply_content}, sysdate)
+  	</insert>
+  	
+  	<update id="modifyReply">
+  		update tbl_blog_reply
+  		set	reply_content = #{reply_content}, updatedate = sysdate
+  		where blog_rno = #{blog_rno}
+  	</update>
+  	
+  	<delete id="deleteByBlog_rno">
+  		delete from tbl_blog_reply
+  		where blog_rno = #{blog_rno}	
+  	</delete>
+  	
+  	
+  	
+  	
+  	
+  </mapper>

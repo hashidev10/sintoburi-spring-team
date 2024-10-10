@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- 매퍼 인터페이스 경로와 같게 지정  -->
+  <mapper namespace="com.kh.sintoburi.mapper.hc.HcProductTagMapper">
+  	
+  	<insert id="insert">
+  		insert into tbl_blog_tag(blog_no, product_no, product_name)
+  		values(#{blog_no}, #{product_no}, #{product_name})
+  	</insert>
+  	
+  	<delete id="deleteByPrimaryKey">
+  		delete from tbl_blog_tag
+  		where blog_no = #{blog_no}
+  		and product_no = #{product_no}
+  	</delete>
+  	
+  	<update id="update">
+  		update tbl_blog_tag
+  		set	product_name = #{product_name}
+  		where  product_no = #{product_no} and blog_no = #{blog_no}
+  	</update>
+  	
+  	<select id="getTagList" resultType="HcProductTagDto">
+  		select blog_no, product_no, product_name,
+  			(select UUID from tbl_img where product_no = tbl_blog_tag.product_no ) as uuid, 
+  			(select IMG_NAME from tbl_img where product_no = tbl_blog_tag.product_no ) as file_name, 
+  			(select IMG_PATH from tbl_img where product_no = tbl_blog_tag.product_no ) as file_path
+  		from tbl_blog_tag
+  		where blog_no = #{blog_no}
+  	</select>
+  	
+  	<select id="getProductListWithCondition" resultType="HcProductTagDto">
+  		select * from tbl_product
+  		<where>
+  		<choose>
+  			<when test="product_no == 0">
+  				product_name like '%' || #{product_name} || '%' 
+  			</when>
+  			<when test="product_name == null">
+  				product_no like #{product_no} || '%' 
+  			</when>
+  		</choose>
+  		</where>
+  		order by product_no asc
+  	</select>
+  	
+  	<select id="getProductListWithUserId" resultType="HcProductTagDto">
+  		select p.product_no, p.product_name, i.UUID as uuid, 
+  		i.IMG_NAME as file_name, i.IMG_PATH as file_path
+	  	from 
+	  		tbl_product p
+	  	left join 
+	  		tbl_img i 
+	  	on 
+	  		p.product_no = i.product_no
+	  	where 
+	  		p.user_id = #{user_id}
+  	</select>
+  	
+  	
+  
+  </mapper>

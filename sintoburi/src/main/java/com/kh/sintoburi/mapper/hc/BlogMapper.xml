@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <!-- 매퍼 인터페이스 경로와 같게 지정  -->
+  <mapper namespace="com.kh.sintoburi.mapper.hc.BlogMapper">
+  
+  	<insert id="insertSelectKey">
+  		<selectKey order="BEFORE" resultType="int" keyProperty="blog_no">
+			select seq_blog.nextval from dual 		
+  		</selectKey>
+  		insert into tbl_blog(blog_no, user_id, blog_content, user_name)
+  		values(#{blog_no}, #{user_id}, #{blog_content}, #{user_name})
+  	</insert>
+  	
+  	<update id="updateBlog">
+  		update tbl_blog 
+  		set blog_content = #{blog_content}, updatedate = sysdate
+  		where blog_no = #{blog_no}
+  	</update>
+  	
+  	<delete id="deteteByBlog_no">
+  		delete from tbl_blog
+  		where blog_no = #{blog_no}
+  	</delete>
+  	
+  	<select id="getListWithPage" resultType="BlogVo">
+  		select * 
+  		from (
+  		select b.blog_no, b.user_id, b.blog_content, b.regdate, b.updatedate, b.user_name,
+  			(SELECT COUNT(*) FROM tbl_blog_like l WHERE l.blog_no = b.blog_no) AS likes_count,
+  			(SELECT COUNT(*) FROM tbl_user_follow uf WHERE uf.user_following = b.user_id) AS followers_count,
+  			rownum as rn
+  		from tbl_blog b
+  		<if test="type == 'P'.toString()">
+  			LEFT JOIN tbl_blog_tag p ON b.blog_no = p.blog_no
+  		</if>
+ 		<where>
+  			<if test="type != null">
+				<choose>
+					<when test="type == 'T'.toString()">
+						 b.blog_content like '%' || #{keyword} || '%'
+					</when>
+					<when test="type == 'P'.toString()">
+						 p.product_name like '%' || #{keyword} || '%'
+					</when>
+					<when test="type == 'W'.toString()">
+						 b.user_name like '%' || #{keyword} || '%'
+					</when>
+				</choose>
+			</if>
+			and rownum &lt;= #{pageNum} * #{limit})
+		</where>
+		where rn &gt; (#{pageNum} - 1 ) * #{limit} 
+  		order by 
+  			followers_count DESC,
+  			likes_count DESC
+  	</select>
+  	
+  	
+  	<select id="getBlogVoByBlogNo" resultType="BlogVo">
+  		select * from tbl_blog
+  		where blog_no = #{blog_no}
+  	</select>
+  	
+  	<select id="getListByUser_id" resultType="BlogVo">
+  		select * from tbl_blog
+  		where user_id = #{user_id}
+  		order by blog_no desc
+  	</select>
+  
+  </mapper>
